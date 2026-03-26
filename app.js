@@ -593,6 +593,18 @@
       if (e.target.files.length) handleUpload(e.target.files[0]);
     });
 
+    // Dynamically set controls bar sticky offset based on actual header height
+    function updateStickyOffset() {
+      const topBar = $(".top-bar");
+      const controlsBar = $(".controls-bar");
+      if (topBar && controlsBar) {
+        const h = topBar.offsetHeight;
+        controlsBar.style.top = h + "px";
+      }
+    }
+    updateStickyOffset();
+    window.addEventListener("resize", updateStickyOffset);
+
     // Initial render
     render();
   }

@@ -182,9 +182,10 @@ body {
   background: var(--bg-card);
   border-bottom: 1px solid var(--border);
   position: sticky;
-  top: 56px;
+  top: 56px; /* overridden by JS for accuracy */
   z-index: 50;
   align-items: flex-end;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
 }
 .control-group { display: flex; flex-direction: column; gap: 3px; }
 .control-group label { font-size: 0.7rem; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.04em; }
