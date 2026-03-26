@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NBA Daily Projections</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- ====== TOP NAV ====== -->
+  <header class="top-bar">
+    <div class="top-bar-left">
+      <h1 class="logo">NBA Daily Projections</h1>
+      <span class="date-badge" id="todayDate"></span>
+    </div>
+    <div class="top-bar-right">
+      <button id="darkToggle" class="icon-btn" title="Toggle dark mode">
+        <span class="sun-icon">&#9728;</span>
+        <span class="moon-icon">&#9790;</span>
+      </button>
+      <button id="fetchApiBtn" class="btn btn-sm btn-green">Fetch Live Data</button>
+      <button id="exportBtn" class="btn btn-sm">Export CSV</button>
+      <button id="uploadBtn" class="btn btn-sm btn-outline">Upload Data</button>
+      <input type="file" id="fileInput" accept=".json,.csv" hidden>
+    </div>
+  </header>
+
+  <div class="layout">
+    <!-- ====== SIDEBAR — Best Matchups ====== -->
+    <aside class="sidebar" id="sidebar">
+      <h2 class="sidebar-title">Best Matchups Today</h2>
+      <p class="sidebar-subtitle">Top players by matchup advantage</p>
+      <div id="topPicks" class="top-picks-list"></div>
+    </aside>
+
+    <!-- ====== MAIN CONTENT ====== -->
+    <main class="main">
+      <!-- ---- Controls ---- -->
+      <section class="controls-bar">
+        <div class="control-group">
+          <label>View</label>
+          <div class="tab-group">
+            <button class="tab active" data-view="games">Game-by-Game</button>
+            <button class="tab" data-view="all">All Players</button>
+          </div>
+        </div>
+
+        <div class="control-group">
+          <label for="filterTeam">Team</label>
+          <select id="filterTeam"><option value="">All Teams</option></select>
+        </div>
+
+        <div class="control-group">
+          <label for="filterPos">Position</label>
+          <select id="filterPos">
+            <option value="">All</option>
+            <option value="PG">PG</option>
+            <option value="SG">SG</option>
+            <option value="SF">SF</option>
+            <option value="PF">PF</option>
+            <option value="C">C</option>
+          </select>
+        </div>
+
+        <div class="control-group">
+          <label for="filterGame">Game</label>
+          <select id="filterGame"><option value="">All Games</option></select>
+        </div>
+
+        <div class="control-group">
+          <label for="minMinutes">Min MPG</label>
+          <input type="number" id="minMinutes" value="0" min="0" max="48" step="1">
+        </div>
+
+        <div class="control-group">
+          <label for="sortBy">Sort By</label>
+          <select id="sortBy">
+            <option value="projPts">Proj PTS</option>
+            <option value="projReb">Proj REB</option>
+            <option value="projAst">Proj AST</option>
+            <option value="diff">Matchup Advantage</option>
+            <option value="pts">Season PTS</option>
+          </select>
+        </div>
+
+        <div class="control-group weight-slider-group">
+          <label for="weightSlider">Weight: Player <span id="weightLabel">50</span>% / Def <span id="weightLabelDef">50</span>%</label>
+          <input type="range" id="weightSlider" min="0" max="100" value="50" step="5">
+        </div>
+
+        <div class="control-group">
+          <label class="checkbox-label">
+            <input type="checkbox" id="useL10"> Last 10 Games
+          </label>
+        </div>
+      </section>
+
+      <!-- ---- Game-by-Game View ---- -->
+      <div id="gamesView"></div>
+
+      <!-- ---- All Players Table View ---- -->
+      <div id="allView" class="hidden"></div>
+    </main>
+  </div>
+
+  <!-- ====== API Settings Modal ====== -->
+  <div class="modal-backdrop hidden" id="apiModalBackdrop">
+    <div class="modal">
+      <h3>Fetch Live NBA Data</h3>
+      <p>Enter your free <a href="https://app.balldontlie.io" target="_blank" rel="noopener">BallDontLie API</a> key to pull today's real games and rosters.</p>
+      <div class="api-tier-note">
+        <strong>Free tier</strong> fetches: today's schedule + team rosters.<br>
+        <strong>Player stats &amp; defense data</strong> use built-in sample data (upload your own via the Upload button for real stats).<br>
+        <span class="api-tier-dim">Paid tiers ($10-$40/mo) unlock live season averages &amp; game stats.</span>
+      </div>
+      <div class="api-form">
+        <label for="apiKeyInput" class="api-label">API Key</label>
+        <input type="text" id="apiKeyInput" class="api-input" placeholder="Paste your API key here..." />
+        <p class="api-hint">Free signup at <a href="https://app.balldontlie.io" target="_blank" rel="noopener">app.balldontlie.io</a> &mdash; no credit card required.</p>
+        <div id="apiStatus" class="api-status hidden"></div>
+        <div class="api-options">
+          <label for="apiDate" class="api-label">Date (optional)</label>
+          <input type="date" id="apiDate" class="api-input" />
+          <p class="api-hint">Leave blank for today's games.</p>
+        </div>
+        <p class="api-hint" style="margin-top:8px;color:var(--yellow);">Note: Free tier allows 5 requests/min. Fetching may take 1-2 minutes due to pacing.</p>
+      </div>
+      <div class="modal-actions">
+        <button class="btn btn-sm btn-outline" id="apiModalClose">Cancel</button>
+        <button class="btn btn-sm btn-green" id="apiFetchGo">Fetch Data</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ====== Upload Modal ====== -->
+  <div class="modal-backdrop hidden" id="modalBackdrop">
+    <div class="modal">
+      <h3>Upload Data</h3>
+      <p>Upload a JSON file with <code>games</code>, <code>players</code>, and/or <code>defense</code> keys to override the built-in sample data.</p>
+      <div class="upload-zone" id="dropZone">
+        <p>Drag &amp; drop a .json file here or click to browse</p>
+      </div>
+      <div class="modal-actions">
+        <button class="btn btn-sm btn-outline" id="modalClose">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="data.js?v=4"></script>
+  <script src="api.js?v=4"></script>
+  <script src="app.js?v=4"></script>
+</body>
+</html>
