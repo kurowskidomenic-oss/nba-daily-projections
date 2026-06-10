@@ -21,6 +21,10 @@
     </header>
 
     <div id="subheader">
+      <div id="len-toggle" aria-label="Word length">
+        <button data-len="4">4</button>
+        <button data-len="5">5</button>
+      </div>
       <span id="puzzle-label">Puzzle #1</span>
       <span class="dot">·</span>
       <span id="par-label">Par 5</span>
@@ -56,6 +60,8 @@
         <span class="ky">yellow</span> = in the goal, wrong spot.</p>
       <p>Each puzzle has a <b>par</b>. Finish in fewer moves to beat it, then share
         your climb — no spoilers, just colors.</p>
+      <p>Feeling strong? Switch between <b>4-letter</b> and <b>5-letter</b> daily
+        climbs with the toggle up top — separate puzzles, separate streaks.</p>
       <p class="fineprint">Word ladders were invented by Lewis Carroll in 1877.
         He'd have crushed your streak.</p>
     </div>
@@ -65,7 +71,7 @@
   <div class="modal-backdrop hidden" id="modal-stats">
     <div class="modal">
       <button class="modal-close" data-close>×</button>
-      <h2>Statistics</h2>
+      <h2 id="stats-title">Statistics</h2>
       <div class="stats-grid">
         <div><b id="st-played">0</b><span>Played</span></div>
         <div><b id="st-solved">0%</b><span>Solved</span></div>
@@ -95,8 +101,8 @@
     </div>
   </div>
 
-  <script src="words.js"></script>
-  <script src="puzzles.js"></script>
+  <script src="data4.js"></script>
+  <script src="data5.js"></script>
   <script src="game.js"></script>
 </body>
 </html>

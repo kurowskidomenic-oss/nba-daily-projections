@@ -69,6 +69,7 @@ h1 {
   display: flex;
   align-items: center;
   justify-content: center;
+  flex-wrap: wrap;
   gap: 7px;
   padding: 8px 12px;
   font-size: 13.5px;
@@ -76,6 +77,26 @@ h1 {
 }
 
 #subheader .dot { opacity: 0.5; }
+
+#len-toggle {
+  display: flex;
+  border: 1px solid var(--tile-border);
+  border-radius: 999px;
+  overflow: hidden;
+  margin-right: 2px;
+}
+
+#len-toggle button {
+  background: var(--bg2);
+  color: var(--muted);
+  border: none;
+  padding: 4px 11px;
+  font-size: 12.5px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+#len-toggle button.on { background: var(--accent); color: #fff; }
 
 .pill {
   border: 1px solid var(--tile-border);
@@ -128,6 +149,9 @@ h1 {
   border: 2px solid var(--tile-border);
   transition: background 0.15s, border-color 0.15s, transform 0.1s;
 }
+
+/* Five tiles per row need slightly smaller tiles to fit small phones. */
+body.len5 { --tile-size: min(11vw, 52px); }
 
 .tile.correct { background: var(--green); border-color: var(--green); }
 .tile.present { background: var(--yellow); border-color: var(--yellow); color: #1b1b1b; }

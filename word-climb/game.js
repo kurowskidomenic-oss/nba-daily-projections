@@ -1,13 +1,27 @@
 'use strict';
 
-/* ---------- data ---------- */
+/* ---------- data & mode ---------- */
 
-const DICT = new Set();
-for (let i = 0; i < WC_DICT_RAW.length; i += 4) DICT.add(WC_DICT_RAW.slice(i, i + 4));
+const WORD_LENS = [4, 5];
 
-const LS_STATE = 'wordclimb.state.v1';
-const LS_STATS = 'wordclimb.stats.v1';
+const DICTS = {};
+for (const l of WORD_LENS) {
+  DICTS[l] = new Set();
+  const raw = WC_DATA[l].dict;
+  for (let i = 0; i < raw.length; i += l) DICTS[l].add(raw.slice(i, i + l));
+}
+
+const LS_LEN = 'wordclimb.len.v1';
 const LS_SEEN_HELP = 'wordclimb.seenhelp.v1';
+const lsState = () => `wordclimb.state.v1.${LEN}`;
+const lsStats = () => `wordclimb.stats.v1.${LEN}`;
+
+let LEN = +(localStorage.getItem(LS_LEN) || 4);
+if (!WC_DATA[LEN]) LEN = 4;
+
+function dict() {
+  return DICTS[LEN];
+}
 
 /* ---------- daily puzzle selection ---------- */
 
@@ -16,13 +30,14 @@ function startOfDay(d) {
 }
 
 function todayNumber() {
-  const epoch = startOfDay(new Date(WC_EPOCH + 'T12:00:00'));
+  const epoch = startOfDay(new Date(WC_DATA[LEN].epoch + 'T12:00:00'));
   const n = Math.round((startOfDay(new Date()) - epoch) / 864e5) + 1;
   return Math.max(1, n);
 }
 
 function puzzleFor(n) {
-  const [start, target, best] = WC_PUZZLES[(n - 1) % WC_PUZZLES.length];
+  const list = WC_DATA[LEN].puzzles;
+  const [start, target, best] = list[(n - 1) % list.length];
   return { start, target, best, par: best + 1 };
 }
 
@@ -58,7 +73,7 @@ function loadDaily() {
     chain: [p.start], cur: p.start, sel: null, done: false, gaveUp: false,
   });
   try {
-    const saved = JSON.parse(localStorage.getItem(LS_STATE));
+    const saved = JSON.parse(localStorage.getItem(lsState()));
     if (saved && saved.day === day && Array.isArray(saved.chain) && saved.chain[0] === p.start) {
       state.chain = saved.chain;
       state.done = !!saved.done;
@@ -69,30 +84,32 @@ function loadDaily() {
 }
 
 function loadPractice() {
+  const list = WC_DATA[LEN].puzzles;
   let i;
-  do { i = Math.floor(Math.random() * WC_PUZZLES.length); } while (i === (todayNumber() - 1) % WC_PUZZLES.length);
+  do { i = Math.floor(Math.random() * list.length); } while (i === (todayNumber() - 1) % list.length);
   const p = puzzleFor(i + 1);
   Object.assign(state, {
     mode: 'practice', day: i + 1, ...p,
     chain: [p.start], cur: p.start, sel: null, done: false, gaveUp: false,
   });
   renderAll();
+  markGoalKeys();
 }
 
 function saveDaily() {
   if (state.mode !== 'daily') return;
-  localStorage.setItem(LS_STATE, JSON.stringify({
+  localStorage.setItem(lsState(), JSON.stringify({
     day: state.day, chain: state.chain, done: state.done, gaveUp: state.gaveUp,
   }));
 }
 
-/* ---------- stats ---------- */
+/* ---------- stats (kept separately per word length) ---------- */
 
 function loadStats() {
   try {
     return Object.assign(
       { played: 0, solved: 0, streak: 0, maxStreak: 0, lastSolvedDay: 0, under: 0, atPar: 0, over: 0 },
-      JSON.parse(localStorage.getItem(LS_STATS)) || {}
+      JSON.parse(localStorage.getItem(lsStats())) || {}
     );
   } catch (e) {
     return { played: 0, solved: 0, streak: 0, maxStreak: 0, lastSolvedDay: 0, under: 0, atPar: 0, over: 0 };
@@ -115,26 +132,20 @@ function recordResult(solved) {
   } else {
     s.streak = 0;
   }
-  localStorage.setItem(LS_STATS, JSON.stringify(s));
+  localStorage.setItem(lsStats(), JSON.stringify(s));
 }
 
 /* ---------- word helpers ---------- */
 
-function diffCount(a, b) {
-  let n = 0;
-  for (let i = 0; i < 4; i++) if (a[i] !== b[i]) n++;
-  return n;
-}
-
 // Wordle-style coloring of `word` against the goal, duplicate-aware.
 function colorRow(word, target) {
-  const res = ['absent', 'absent', 'absent', 'absent'];
+  const res = new Array(LEN).fill('absent');
   const remaining = {};
-  for (let i = 0; i < 4; i++) {
+  for (let i = 0; i < LEN; i++) {
     if (word[i] === target[i]) res[i] = 'correct';
     else remaining[target[i]] = (remaining[target[i]] || 0) + 1;
   }
-  for (let i = 0; i < 4; i++) {
+  for (let i = 0; i < LEN; i++) {
     if (res[i] !== 'correct' && remaining[word[i]] > 0) {
       res[i] = 'present';
       remaining[word[i]]--;
@@ -143,17 +154,17 @@ function colorRow(word, target) {
   return res;
 }
 
-// BFS shortest path start->target through DICT; used for "give up" reveal.
+// BFS shortest path start->target through the dictionary; "give up" reveal.
 function shortestPath(from, to) {
   const parent = new Map([[from, null]]);
   let frontier = [from];
   while (frontier.length) {
     const next = [];
     for (const w of frontier) {
-      for (let i = 0; i < 4; i++) {
+      for (let i = 0; i < LEN; i++) {
         for (let c = 97; c < 123; c++) {
           const cand = w.slice(0, i) + String.fromCharCode(c) + w.slice(i + 1);
-          if (cand === w || parent.has(cand) || !DICT.has(cand)) continue;
+          if (cand === w || parent.has(cand) || !dict().has(cand)) continue;
           parent.set(cand, w);
           if (cand === to) {
             const path = [cand];
@@ -178,7 +189,7 @@ const ladder = $('ladder');
 function tileRow(word, classes, tileClasses) {
   const row = document.createElement('div');
   row.className = 'row ' + (classes || '');
-  for (let i = 0; i < 4; i++) {
+  for (let i = 0; i < LEN; i++) {
     const t = document.createElement('div');
     t.className = 'tile ' + (tileClasses ? tileClasses[i] : '');
     t.textContent = word[i];
@@ -202,7 +213,7 @@ function renderLadder(pop) {
   // Goal row pinned at top of the climb; once done the chain itself ends on
   // the goal, so the separate dashed row would be redundant.
   if (!state.done) {
-    const goal = tileRow(state.target, '', ['goal', 'goal', 'goal', 'goal']);
+    const goal = tileRow(state.target, '', new Array(LEN).fill('goal'));
     tag(goal, 'goal');
     ladder.appendChild(goal);
 
@@ -214,7 +225,7 @@ function renderLadder(pop) {
     // Editable row the player is composing.
     const last = lastWord();
     const tileClasses = [];
-    for (let i = 0; i < 4; i++) {
+    for (let i = 0; i < LEN; i++) {
       let c = '';
       if (state.sel === i) c += ' sel';
       if (state.cur[i] !== last[i]) c += ' edited';
@@ -255,6 +266,9 @@ function renderHud() {
   $('moves-label').textContent = `${moves()} move${moves() === 1 ? '' : 's'}`;
   $('btn-results').classList.toggle('hidden', !state.done);
   $('btn-giveup').classList.toggle('hidden', state.done);
+  document.querySelectorAll('#len-toggle button').forEach((b) => {
+    b.classList.toggle('on', +b.dataset.len === LEN);
+  });
 }
 
 function renderAll(pop) {
@@ -321,7 +335,7 @@ function typeLetter(ch) {
   const last = lastWord();
   const w = state.cur.split('');
   // Only one letter may differ from the previous rung: revert other edits.
-  for (let i = 0; i < 4; i++) if (i !== state.sel && w[i] !== last[i]) w[i] = last[i];
+  for (let i = 0; i < LEN; i++) if (i !== state.sel && w[i] !== last[i]) w[i] = last[i];
   w[state.sel] = ch;
   state.cur = w.join('');
   renderAll();
@@ -348,7 +362,7 @@ function submit() {
     toast('Change one letter first');
     return renderAll('shake');
   }
-  if (!DICT.has(w)) {
+  if (!dict().has(w)) {
     toast('Not in word list');
     return renderAll('shake');
   }
@@ -360,7 +374,7 @@ function submit() {
   state.cur = w;
   state.sel = null;
   if (w === state.target) {
-    finish(true);
+    finish();
   } else {
     saveDaily();
     renderAll('pop');
@@ -388,6 +402,17 @@ function finish() {
   setTimeout(showResult, 650);
 }
 
+function setLen(l) {
+  if (l === LEN || !WC_DATA[l]) return;
+  LEN = l;
+  localStorage.setItem(LS_LEN, l);
+  document.body.classList.toggle('len5', LEN === 5);
+  closeModals();
+  loadDaily();
+  renderAll();
+  markGoalKeys();
+}
+
 /* ---------- results & sharing ---------- */
 
 const EMOJI = { correct: '\u{1F7E9}', present: '\u{1F7E8}', absent: '⬜' };
@@ -408,9 +433,10 @@ function resultLabel() {
 }
 
 function shareText() {
+  const tagTxt = LEN === 5 ? ' · 5-letter' : '';
   const head = state.mode === 'practice'
-    ? `Word Climb (practice) \u{1F9D7}`
-    : `Word Climb #${state.day} \u{1F9D7}`;
+    ? `Word Climb (practice${tagTxt}) \u{1F9D7}`
+    : `Word Climb #${state.day}${tagTxt} \u{1F9D7}`;
   return `${head}\n${state.start.toUpperCase()} → ${state.target.toUpperCase()} in ${moves()} (par ${state.par})\n${emojiGrid()}`;
 }
 
@@ -480,6 +506,7 @@ function closeModals() {
 
 function showStats() {
   const s = loadStats();
+  $('stats-title').textContent = `Statistics · ${LEN}-letter`;
   $('st-played').textContent = s.played;
   $('st-solved').textContent = s.played ? Math.round((100 * s.solved) / s.played) + '%' : '0%';
   $('st-streak').textContent = s.streak;
@@ -503,8 +530,8 @@ document.addEventListener('keydown', (e) => {
   if (!document.querySelector('.modal-backdrop:not(.hidden)')) {
     if (e.key === 'Enter') return submit();
     if (e.key === 'Backspace') return undo();
-    if (e.key === 'ArrowLeft') { state.sel = state.sel === null ? 0 : (state.sel + 3) % 4; return renderAll(); }
-    if (e.key === 'ArrowRight') { state.sel = state.sel === null ? 0 : (state.sel + 1) % 4; return renderAll(); }
+    if (e.key === 'ArrowLeft') { state.sel = state.sel === null ? 0 : (state.sel + LEN - 1) % LEN; return renderAll(); }
+    if (e.key === 'ArrowRight') { state.sel = state.sel === null ? 0 : (state.sel + 1) % LEN; return renderAll(); }
     if (/^[a-zA-Z]$/.test(e.key)) {
       if (state.sel === null) state.sel = 0;
       return typeLetter(e.key.toLowerCase());
@@ -521,8 +548,12 @@ $('btn-stats').addEventListener('click', showStats);
 $('btn-results').addEventListener('click', showResult);
 $('btn-giveup').addEventListener('click', giveUp);
 $('btn-share').addEventListener('click', share);
-$('btn-practice').addEventListener('click', () => { closeModals(); loadPractice(); markGoalKeys(); });
-$('btn-practice-stats').addEventListener('click', () => { closeModals(); loadPractice(); markGoalKeys(); });
+$('btn-practice').addEventListener('click', () => { closeModals(); loadPractice(); });
+$('btn-practice-stats').addEventListener('click', () => { closeModals(); loadPractice(); });
+
+document.querySelectorAll('#len-toggle button').forEach((b) => {
+  b.addEventListener('click', () => setLen(+b.dataset.len));
+});
 
 document.querySelectorAll('.modal-backdrop').forEach((bd) => {
   bd.addEventListener('click', (e) => {
@@ -542,6 +573,7 @@ document.addEventListener('visibilitychange', () => {
 
 /* ---------- boot ---------- */
 
+document.body.classList.toggle('len5', LEN === 5);
 buildKeyboard();
 loadDaily();
 renderAll();
