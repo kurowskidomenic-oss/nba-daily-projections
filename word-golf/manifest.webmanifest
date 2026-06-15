@@ -1,0 +1,12 @@
+{
+  "name": "Word Golf",
+  "short_name": "Word Golf",
+  "description": "The daily word ladder. Change one letter at a time, beat par, share your scorecard.",
+  "start_url": ".",
+  "display": "standalone",
+  "background_color": "#0e1220",
+  "theme_color": "#0e1220",
+  "icons": [
+    { "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }
+  ]
+}
