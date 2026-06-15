@@ -2,7 +2,7 @@
 // solvable through the shipped dictionary, and the stored optimal move count
 // must equal the true BFS shortest path (so par is always honest).
 //
-// Usage: node word-climb/tools/test-integrity.mjs
+// Usage: node word-golf/tools/test-integrity.mjs
 
 import fs from 'fs';
 import path from 'path';

@@ -6,9 +6,9 @@
   <meta name="theme-color" content="#0e1220">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="description" content="Word Climb — the daily word ladder. Change one letter at a time to climb from the start word to the goal. Beat par, share your chain.">
-  <title>Word Climb 🧗</title>
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧗</text></svg>">
+  <meta name="description" content="Word Golf — the daily word ladder. Change one letter at a time to get from the start word to the goal. Beat par, share your scorecard.">
+  <title>Word Golf ⛳</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⛳</text></svg>">
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="stylesheet" href="style.css">
 </head>
@@ -16,7 +16,7 @@
   <div id="app">
     <header>
       <button class="icon-btn" id="btn-help" aria-label="How to play">?</button>
-      <h1>WORD&nbsp;CLIMB&nbsp;<span class="climber">🧗</span></h1>
+      <h1>WORD&nbsp;GOLF&nbsp;<span class="flag">⛳</span></h1>
       <button class="icon-btn" id="btn-stats" aria-label="Statistics">📊</button>
     </header>
 
@@ -29,7 +29,7 @@
       <span class="dot">·</span>
       <span id="par-label">Par 5</span>
       <span class="dot">·</span>
-      <span id="moves-label">0 moves</span>
+      <span id="moves-label">0 strokes</span>
       <button id="btn-results" class="pill hidden">Results</button>
       <button id="btn-giveup" class="pill subtle">Give up</button>
     </div>
@@ -46,8 +46,8 @@
     <div class="modal">
       <button class="modal-close" data-close>×</button>
       <h2>How to play</h2>
-      <p>Climb from the <b>start word</b> to the <b>goal word</b> by changing
-        <b>one letter at a time</b>. Every rung must be a real word.</p>
+      <p>Get from the <b>start word</b> to the <b>goal word</b> by changing
+        <b>one letter at a time</b>. Every step must be a real word.</p>
       <div class="example">
         <div class="ex-row"><span class="ex t">W</span><span class="ex t">A</span><span class="ex t">R</span><span class="ex t">M</span><span class="ex-tag">goal</span></div>
         <div class="ex-row"><span class="ex g">W</span><span class="ex g">A</span><span class="ex g">R</span><span class="ex n">D</span></div>
@@ -55,13 +55,13 @@
         <div class="ex-row"><span class="ex n">C</span><span class="ex n">O</span><span class="ex g">R</span><span class="ex n">D</span></div>
         <div class="ex-row"><span class="ex n">C</span><span class="ex n">O</span><span class="ex n">L</span><span class="ex n">D</span><span class="ex-tag">start</span></div>
       </div>
-      <p><b>Tap a tile</b>, then tap a letter to change it. Hit <b>ENTER</b> to climb.
+      <p><b>Tap a tile</b>, then tap a letter to change it. Hit <b>ENTER</b> to play the word.
         <span class="kg">green</span> = letter in the right spot of the goal,
         <span class="ky">yellow</span> = in the goal, wrong spot.</p>
-      <p>Each puzzle has a <b>par</b>. Finish in fewer moves to beat it, then share
-        your climb — no spoilers, just colors.</p>
-      <p>Feeling strong? Switch between <b>4-letter</b> and <b>5-letter</b> daily
-        climbs with the toggle up top — separate puzzles, separate streaks.</p>
+      <p>Each hole has a <b>par</b>. Finish in fewer moves to go under — birdie the
+        course record — then share your scorecard. No spoilers, just colors.</p>
+      <p>Feeling sharp? Switch between <b>4-letter</b> and <b>5-letter</b> daily
+        rounds with the toggle up top — separate holes, separate streaks.</p>
       <p class="fineprint">Word ladders were invented by Lewis Carroll in 1877.
         He'd have crushed your streak.</p>
     </div>
@@ -81,7 +81,7 @@
       <h3>vs. par</h3>
       <div class="par-bars" id="par-bars"></div>
       <div class="modal-actions">
-        <button class="btn secondary" id="btn-practice-stats">🎲 Practice climb</button>
+        <button class="btn secondary" id="btn-practice-stats">🎲 Practice round</button>
       </div>
     </div>
   </div>

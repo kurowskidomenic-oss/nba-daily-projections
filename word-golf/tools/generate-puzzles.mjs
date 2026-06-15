@@ -1,4 +1,4 @@
-// Generates word-climb/data4.js and word-climb/data5.js
+// Generates word-golf/data4.js and word-golf/data5.js
 //
 // Inputs (download before running):
 //   /tmp/enable1.txt      https://raw.githubusercontent.com/dolph/dictionary/master/enable1.txt
@@ -8,7 +8,7 @@
 // ENABLE has no proper nouns (Scrabble-style), so intersecting it with the
 // frequency lists keeps the dictionary to real, reasonably common words.
 //
-// Usage: node word-climb/tools/generate-puzzles.mjs
+// Usage: node word-golf/tools/generate-puzzles.mjs
 
 import fs from 'fs';
 import path from 'path';

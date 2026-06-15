@@ -4,6 +4,9 @@
   <rect x="36" y="36" width="28" height="28" rx="6" fill="#c9a23f"/>
   <rect x="54" y="8" width="28" height="28" rx="6" fill="#5b8cff"/>
   <text x="32" y="85" font-size="20" text-anchor="middle" fill="#fff" font-family="sans-serif" font-weight="bold">W</text>
-  <text x="50" y="57" font-size="20" text-anchor="middle" fill="#1b1b1b" font-family="sans-serif" font-weight="bold">C</text>
-  <text x="68" y="29" font-size="20" text-anchor="middle" fill="#fff" font-family="sans-serif" font-weight="bold">↑</text>
+  <text x="50" y="57" font-size="20" text-anchor="middle" fill="#1b1b1b" font-family="sans-serif" font-weight="bold">G</text>
+  <!-- golf flag on the top tile -->
+  <line x1="64" y1="13" x2="64" y2="31" stroke="#fff" stroke-width="2.4" stroke-linecap="round"/>
+  <polygon points="64,13 75,16.5 64,20" fill="#fff"/>
+  <circle cx="64" cy="31" r="2.2" fill="#fff"/>
 </svg>

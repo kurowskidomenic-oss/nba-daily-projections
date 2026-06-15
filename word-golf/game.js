@@ -11,10 +11,10 @@ for (const l of WORD_LENS) {
   for (let i = 0; i < raw.length; i += l) DICTS[l].add(raw.slice(i, i + l));
 }
 
-const LS_LEN = 'wordclimb.len.v1';
-const LS_SEEN_HELP = 'wordclimb.seenhelp.v1';
-const lsState = () => `wordclimb.state.v1.${LEN}`;
-const lsStats = () => `wordclimb.stats.v1.${LEN}`;
+const LS_LEN = 'wordgolf.len.v1';
+const LS_SEEN_HELP = 'wordgolf.seenhelp.v1';
+const lsState = () => `wordgolf.state.v1.${LEN}`;
+const lsStats = () => `wordgolf.stats.v1.${LEN}`;
 
 let LEN = +(localStorage.getItem(LS_LEN) || 4);
 if (!WC_DATA[LEN]) LEN = 4;
@@ -210,8 +210,8 @@ function tag(row, text) {
 function renderLadder(pop) {
   ladder.innerHTML = '';
 
-  // Goal row pinned at top of the climb; once done the chain itself ends on
-  // the goal, so the separate dashed row would be redundant.
+  // Goal row pinned at the top; once done the chain itself ends on the goal,
+  // so the separate dashed row would be redundant.
   if (!state.done) {
     const goal = tileRow(state.target, '', new Array(LEN).fill('goal'));
     tag(goal, 'goal');
@@ -263,7 +263,7 @@ function renderHud() {
   const label = state.mode === 'practice' ? `Practice #${state.day}` : `Puzzle #${state.day}`;
   $('puzzle-label').textContent = label;
   $('par-label').textContent = `Par ${state.par}`;
-  $('moves-label').textContent = `${moves()} move${moves() === 1 ? '' : 's'}`;
+  $('moves-label').textContent = `${moves()} stroke${moves() === 1 ? '' : 's'}`;
   $('btn-results').classList.toggle('hidden', !state.done);
   $('btn-giveup').classList.toggle('hidden', state.done);
   document.querySelectorAll('#len-toggle button').forEach((b) => {
@@ -383,7 +383,7 @@ function submit() {
 
 function giveUp() {
   if (state.done) return;
-  if (!confirm('Reveal the optimal path? This ends today’s climb and resets your streak.')) return;
+  if (!confirm('Reveal the best line? This ends today’s round and resets your streak.')) return;
   const path = shortestPath(state.start, state.target);
   state.done = true;
   state.gaveUp = true;
@@ -425,18 +425,21 @@ function emojiGrid() {
 }
 
 function resultLabel() {
-  const m = moves();
-  if (m === state.best) return 'Perfect climb! \u{1F3D4}️';
-  if (m < state.par) return `${state.par - m} under par \u{1F426}`;
-  if (m === state.par) return 'Right at par ⛳';
-  return `+${m - state.par} over par`;
+  // par = best + 1, so the optimal line lands exactly one under par (a birdie),
+  // and nothing can beat it. Everything else is par or a string of bogeys.
+  const over = moves() - state.par;
+  if (moves() === state.best) return 'Birdie — perfect line! \u{1F426}';
+  if (over === 0) return 'Par ⛳';
+  if (over === 1) return 'Bogey · +1';
+  if (over === 2) return 'Double bogey · +2';
+  return `+${over} over par`;
 }
 
 function shareText() {
   const tagTxt = LEN === 5 ? ' · 5-letter' : '';
   const head = state.mode === 'practice'
-    ? `Word Climb (practice${tagTxt}) \u{1F9D7}`
-    : `Word Climb #${state.day}${tagTxt} \u{1F9D7}`;
+    ? `Word Golf (practice${tagTxt}) ⛳`
+    : `Word Golf #${state.day}${tagTxt} ⛳`;
   return `${head}\n${state.start.toUpperCase()} → ${state.target.toUpperCase()} in ${moves()} (par ${state.par})\n${emojiGrid()}`;
 }
 
@@ -445,14 +448,14 @@ let countdownTimer = null;
 function showResult() {
   const m = moves();
   if (state.gaveUp) {
-    $('result-title').textContent = 'The mountain wins \u{1F3F3}️';
-    $('result-sub').textContent = `Optimal path shown on the ladder — ${state.best} moves.`;
+    $('result-title').textContent = 'Conceded \u{1F3F3}️';
+    $('result-sub').textContent = `Best line shown on the board — ${state.best} strokes.`;
     $('result-grid').textContent = '';
     $('btn-share').classList.add('hidden');
   } else {
     $('result-title').textContent = resultLabel();
     $('result-sub').textContent =
-      `${state.start.toUpperCase()} → ${state.target.toUpperCase()} in ${m} moves · par ${state.par}`;
+      `${state.start.toUpperCase()} → ${state.target.toUpperCase()} in ${m} strokes · par ${state.par}`;
     $('result-grid').textContent = emojiGrid();
     $('btn-share').classList.remove('hidden');
   }
@@ -465,7 +468,7 @@ function showResult() {
       const s = Math.max(0, Math.floor((next - now.getTime()) / 1000));
       const pad = (x) => String(x).padStart(2, '0');
       $('countdown').textContent =
-        `Next climb in ${pad(Math.floor(s / 3600))}:${pad(Math.floor((s % 3600) / 60))}:${pad(s % 60)}`;
+        `Next round in ${pad(Math.floor(s / 3600))}:${pad(Math.floor((s % 3600) / 60))}:${pad(s % 60)}`;
     };
     tick();
     countdownTimer = setInterval(tick, 1000);

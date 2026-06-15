@@ -1,7 +1,7 @@
 {
-  "name": "Word Climb",
-  "short_name": "Word Climb",
-  "description": "The daily word ladder. Change one letter at a time, beat par, share your chain.",
+  "name": "Word Golf",
+  "short_name": "Word Golf",
+  "description": "The daily word ladder. Change one letter at a time, beat par, share your scorecard.",
   "start_url": ".",
   "display": "standalone",
   "background_color": "#0e1220",

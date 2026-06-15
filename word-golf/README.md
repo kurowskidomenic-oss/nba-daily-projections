@@ -1,12 +1,12 @@
-# Word Climb 🧗
+# Word Golf ⛳
 
-A daily word-ladder game for your phone. Climb from the start word to the goal
-word by changing **one letter at a time** — every rung must be a real word.
-Each day has a **par**; beat it and share your climb as a spoiler-free emoji
-grid. (Lewis Carroll invented the mechanic in 1877 — puzzle #1 is his classic
-COLD → WARM.)
+A daily word-ladder game for your phone. Get from the start word to the goal
+word by changing **one letter at a time** — every step must be a real word.
+Each hole has a **par**; finish in fewer strokes to go under, then share your
+scorecard as a spoiler-free emoji grid. (Lewis Carroll invented the mechanic in
+1877 — puzzle #1 is his classic COLD → WARM.)
 
-There are two daily climbs: **4-letter** and **5-letter**, switchable with the
+There are two daily rounds: **4-letter** and **5-letter**, switchable with the
 toggle in the header. Each mode has its own puzzle schedule, saved progress,
 streak, and stats.
 
@@ -23,7 +23,7 @@ COLD   start
 It's a static site — serve this directory and open it:
 
 ```sh
-npx http-server word-climb -p 8080
+npx http-server word-golf -p 8080
 # or deploy anywhere static (GitHub Pages, Netlify, …)
 ```
 
